@@ -23,11 +23,46 @@ http:Service mockService = service object {
     resource function post chat/completions(@http:Payload CreateChatCompletionRequest payload) returns CreateChatCompletionResponse|http:BadRequest {
 
         // Validate the request payload
-        if payload.messages[0]["content"].toString() is "" || payload.model.toString() is "" {
+        if payload.messages.length() == 0 || payload.model.toString() is "" {
             return http:BAD_REQUEST;
         }
 
-        // Mock response
+        // Check if the request includes tools
+        if payload.tools != () {
+            // Return a mock tool call response
+            CreateChatCompletionResponse toolResponse = {
+                id: "chatcmpl-tool-00000",
+                choices: [
+                    {
+                        finish_reason: "tool_calls",
+                        index: 0,
+                        message: {
+                            "content": null,
+                            "role": "assistant",
+                            "refusal": null,
+                            "tool_calls": [
+                                {
+                                    "id": "call_00000",
+                                    "type": "function",
+                                    "function": {
+                                        "name": "get_weather",
+                                        "arguments": "{\"location\":\"San Francisco\"}"
+                                    }
+                                }
+                            ]
+                        },
+                        logprobs: null
+                    }
+                ],
+                created: 1723091495,
+                model: "gpt-4o-mini-2024-07-18",
+                "object": "chat.completion",
+                "usage": {"completion_tokens": 20, "prompt_tokens": 50, "total_tokens": 70}
+            };
+            return toolResponse;
+        }
+
+        // Mock response for regular chat completion
         CreateChatCompletionResponse response = {
             id: "chatcmpl-00000",
             choices: [
@@ -40,7 +75,6 @@ http:Service mockService = service object {
             ],
             created: 1723091495,
             model: "gpt-4o-mini-2024-07-18",
-            system_fingerprint: "fp_48196bc67a",
             "object": "chat.completion",
             "usage": {"completion_tokens": 11, "prompt_tokens": 13, "total_tokens": 24}
         };

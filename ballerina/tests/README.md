@@ -50,7 +50,7 @@ setx IS_LIVE_SERVER false
 Then, run the following command to execute the tests:
 
 ```bash
-./gradlew clean test
+bal test
 ```
 
 ## Running Tests Against the OpenAI Live API
@@ -85,5 +85,5 @@ setx OPENAI_TOKEN <your-openAI-api-token>
 Then, run the following command to execute the tests:
 
 ```bash
-./gradlew clean test
+bal test
 ```
