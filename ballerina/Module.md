@@ -2,7 +2,7 @@
 
 [OpenAI](https://openai.com/), an AI research organization focused on creating friendly AI for humanity, offers the [OpenAI API](https://platform.openai.com/docs/api-reference/introduction) to access its powerful AI models for tasks like natural language processing and image generation.
 
-The `ballarinax/openai.chat` package offers functionality to connect and interact with [chat completion related endpoints of OpenAI REST API v1](https://platform.openai.com/docs/api-reference/chat) Enabling seamless interaction with the advanced GPT-4 models developed by OpenAI for diverse conversational and text generation tasks.
+The `ballerinax/openai.chat` package offers functionality to connect and interact with the [Chat Completions endpoint of the OpenAI REST API](https://platform.openai.com/docs/api-reference/chat/create). This enables seamless integration with OpenAI's chat models for conversational and text generation tasks.
 
 
 ### Key Features
@@ -51,7 +51,7 @@ Create a `chat:Client` with the obtained API Key and initialize the connector.
 ```ballerina
 configurable string token = ?;
 
-final chat:Client openAIChat = check new({
+final chat:Client openAIChat = check new ({
     auth: {
         token
     }
@@ -60,23 +60,24 @@ final chat:Client openAIChat = check new({
 
 ### Step 3: Invoke the connector operation
 
-Now, you can utilize available connector operations.
+Now, you can utilize the available connector operation.
 
-#### Generate a response for given message
+#### Create a chat completion
 
 ```ballerina
 public function main() returns error? {
-
-    // Create a chat completion request.
     chat:CreateChatCompletionRequest request = {
         model: "gpt-4o-mini",
-        messages: [{
-            "role": "user",
-            "content": "What is Ballerina programming language?"
-            }]
+        messages: [
+            {
+                "role": "user",
+                "content": "What is Ballerina programming language?"
+            }
+        ]
     };
 
-    chat:CreateChatCompletionResponse response = check openAIChat->/chat/completions.post(request);
+    chat:CreateChatCompletionResponse response =
+        check openAIChat->/chat/completions.post(request);
 }
 ```
 

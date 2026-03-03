@@ -35,10 +35,75 @@ function initClient() returns Client|error {
 isolated function testChatCompletion() returns error? {
     CreateChatCompletionRequest request = {
         model: "gpt-4o-mini",
-        messages: [{"role": "user", "content": "This is a test message"}]
+        messages: [
+            {"role": "user", "content": "This is a test message"}
+        ]
     };
     CreateChatCompletionResponse response = check openAIChat->/chat/completions.post(request);
     test:assertTrue(response.choices.length() > 0, msg = "Expected at least one completion choice");
-    string? content = response.choices[0].message.content;
+    test:assertEquals(response.choices[0].finish_reason, "stop", msg = "Expected finish reason to be 'stop'");
+    anydata content = response.choices[0].message.content;
     test:assertTrue(content !is (), msg = "Expected content in the completion response");
+}
+
+@test:Config {
+    groups: ["live_tests", "mock_tests"]
+}
+isolated function testChatCompletionWithSystemMessage() returns error? {
+    CreateChatCompletionRequest request = {
+        model: "gpt-4o-mini",
+        messages: [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "This is a test message"}
+        ]
+    };
+    CreateChatCompletionResponse response = check openAIChat->/chat/completions.post(request);
+    test:assertTrue(response.choices.length() > 0, msg = "Expected at least one completion choice");
+    anydata content = response.choices[0].message.content;
+    test:assertTrue(content !is (), msg = "Expected content in the completion response");
+}
+
+@test:Config {
+    groups: ["live_tests", "mock_tests"]
+}
+isolated function testChatCompletionWithToolCall() returns error? {
+    CreateChatCompletionRequest request = {
+        model: "gpt-4o-mini",
+        messages: [
+            {"role": "user", "content": "What is the weather in San Francisco?"}
+        ],
+        tools: [
+            {
+                'type: "function",
+                'function: {
+                    name: "get_weather",
+                    description: "Get the current weather in a given location",
+                    parameters: {}
+                }
+            }
+        ]
+    };
+    CreateChatCompletionResponse response = check openAIChat->/chat/completions.post(request);
+    test:assertTrue(response.choices.length() > 0, msg = "Expected at least one completion choice");
+    test:assertEquals(response.choices[0].finish_reason, "tool_calls", msg = "Expected finish reason to be 'tool_calls'");
+    ChatCompletionMessageToolCalls? toolCalls = response.choices[0].message.tool_calls;
+    test:assertTrue(toolCalls !is (), msg = "Expected tool calls in the response");
+}
+
+@test:Config {
+    groups: ["live_tests", "mock_tests"]
+}
+isolated function testChatCompletionResponseFields() returns error? {
+    CreateChatCompletionRequest request = {
+        model: "gpt-4o-mini",
+        messages: [
+            {"role": "user", "content": "This is a test message"}
+        ]
+    };
+    CreateChatCompletionResponse response = check openAIChat->/chat/completions.post(request);
+    test:assertTrue(response.id.length() > 0, msg = "Expected a non-empty response ID");
+    test:assertTrue(response.created > 0, msg = "Expected a valid created timestamp");
+    test:assertTrue(response.model.length() > 0, msg = "Expected a non-empty model name");
+    test:assertEquals(response.'object, "chat.completion", msg = "Expected object type to be 'chat.completion'");
+    test:assertTrue(response.usage !is (), msg = "Expected usage information in response");
 }

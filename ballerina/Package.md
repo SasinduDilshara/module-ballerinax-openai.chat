@@ -50,7 +50,7 @@ Create a `chat:Client` with the obtained API Key and initialize the connector.
 ```ballerina
 configurable string token = ?;
 
-final chat:Client openAIChat = check new({
+final chat:Client openAIChat = check new ({
     auth: {
         token
     }
@@ -59,23 +59,24 @@ final chat:Client openAIChat = check new({
 
 ### Step 3: Invoke the connector operation
 
-Now, you can utilize available connector operations.
+Now, you can utilize the available connector operation.
 
-#### Generate a response for given message
+#### Create a chat completion
 
 ```ballerina
 public function main() returns error? {
-
-    // Create a chat completion request.
     chat:CreateChatCompletionRequest request = {
         model: "gpt-4o-mini",
-        messages: [{
-            "role": "user",
-            "content": "What is Ballerina programming language?"
-            }]
+        messages: [
+            {
+                "role": "user",
+                "content": "What is Ballerina programming language?"
+            }
+        ]
     };
 
-    chat:CreateChatCompletionResponse response = check openAIChat->/chat/completions.post(request);
+    chat:CreateChatCompletionResponse response =
+        check openAIChat->/chat/completions.post(request);
 }
 ```
 
