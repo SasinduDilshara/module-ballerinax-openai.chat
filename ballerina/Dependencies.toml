@@ -5,7 +5,7 @@
 
 [ballerina]
 dependencies-toml-version = "2"
-distribution-version = "2201.13.1"
+distribution-version = "2201.13.0"
 
 [[package]]
 org = "ballerina"
@@ -342,7 +342,7 @@ modules = [
 [[package]]
 org = "ballerinax"
 name = "openai.chat"
-version = "4.0.1"
+version = "5.0.0"
 dependencies = [
 	{org = "ballerina", name = "data.jsondata"},
 	{org = "ballerina", name = "http"},
