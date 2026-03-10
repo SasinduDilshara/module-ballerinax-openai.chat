@@ -17,7 +17,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/data.jsondata;
 import ballerina/http;
 
 # The OpenAI REST API. Please see https://platform.openai.com/docs/api-reference for more details.
@@ -25,39 +24,126 @@ public isolated client class Client {
     final http:Client clientEp;
     # Gets invoked to initialize the `connector`.
     #
-    # + config - The configurations to be used when initializing the `connector`
-    # + serviceUrl - URL of the target service
-    # + return - An error if connector initialization failed
+    # + config - The configurations to be used when initializing the `connector` 
+    # + serviceUrl - URL of the target service 
+    # + return - An error if connector initialization failed 
     public isolated function init(ConnectionConfig config, string serviceUrl = "https://api.openai.com/v1") returns error? {
-        http:ClientConfiguration httpClientConfig = {auth: config.auth, httpVersion: config.httpVersion, http1Settings: config.http1Settings, http2Settings: config.http2Settings, timeout: config.timeout, forwarded: config.forwarded, followRedirects: config.followRedirects, poolConfig: config.poolConfig, cache: config.cache, compression: config.compression, circuitBreaker: config.circuitBreaker, retryConfig: config.retryConfig, cookieConfig: config.cookieConfig, responseLimits: config.responseLimits, secureSocket: config.secureSocket, proxy: config.proxy, socketConfig: config.socketConfig, validation: config.validation, laxDataBinding: config.laxDataBinding};
-        self.clientEp = check new (serviceUrl, httpClientConfig);
+        http:ClientConfiguration httpClientConfig = {auth: config.auth, httpVersion: config.httpVersion, timeout: config.timeout, forwarded: config.forwarded, poolConfig: config.poolConfig, compression: config.compression, circuitBreaker: config.circuitBreaker, retryConfig: config.retryConfig, validation: config.validation};
+        do {
+            if config.http1Settings is ClientHttp1Settings {
+                ClientHttp1Settings settings = check config.http1Settings.ensureType(ClientHttp1Settings);
+                httpClientConfig.http1Settings = {...settings};
+            }
+            if config.http2Settings is http:ClientHttp2Settings {
+                httpClientConfig.http2Settings = check config.http2Settings.ensureType(http:ClientHttp2Settings);
+            }
+            if config.cache is http:CacheConfig {
+                httpClientConfig.cache = check config.cache.ensureType(http:CacheConfig);
+            }
+            if config.responseLimits is http:ResponseLimitConfigs {
+                httpClientConfig.responseLimits = check config.responseLimits.ensureType(http:ResponseLimitConfigs);
+            }
+            if config.secureSocket is http:ClientSecureSocket {
+                httpClientConfig.secureSocket = check config.secureSocket.ensureType(http:ClientSecureSocket);
+            }
+            if config.proxy is http:ProxyConfig {
+                httpClientConfig.proxy = check config.proxy.ensureType(http:ProxyConfig);
+            }
+        }
+        http:Client httpEp = check new (serviceUrl, httpClientConfig);
+        self.clientEp = httpEp;
+        return;
+    }
+
+    # Delete a stored chat completion. Only Chat Completions that have been
+    # created with the `store` parameter set to `true` can be deleted.
+    #
+    # + completion_id - The ID of the chat completion to delete.
+    # + headers - Headers to be sent with the request 
+    # + return - The chat completion was deleted successfully. 
+    resource isolated function delete chat/completions/[string completion_id](map<string|string[]> headers = {}) returns ChatCompletionDeleted|error {
+        string resourcePath = string `/chat/completions/${getEncodedUri(completion_id)}`;
+        return self.clientEp->delete(resourcePath, headers = headers);
+    }
+
+    # List stored Chat Completions. Only Chat Completions that have been stored
+    # with the `store` parameter set to `true` will be returned.
+    #
+    # + headers - Headers to be sent with the request 
+    # + queries - Queries to be sent with the request 
+    # + return - A list of Chat Completions 
+    resource isolated function get chat/completions(map<string|string[]> headers = {}, *ListChatCompletionsQueries queries) returns ChatCompletionList|error {
+        string resourcePath = string `/chat/completions`;
+        map<Encoding> queryParamEncoding = {"metadata": {style: FORM, explode: true}};
+        resourcePath = resourcePath + check getPathForQueryParam(queries, queryParamEncoding);
+        return self.clientEp->get(resourcePath, headers);
+    }
+
+    # Get a stored chat completion. Only Chat Completions that have been created
+    # with the `store` parameter set to `true` will be returned.
+    #
+    # + completion_id - The ID of the chat completion to retrieve.
+    # + headers - Headers to be sent with the request 
+    # + return - A chat completion 
+    resource isolated function get chat/completions/[string completion_id](map<string|string[]> headers = {}) returns CreateChatCompletionResponse|error {
+        string resourcePath = string `/chat/completions/${getEncodedUri(completion_id)}`;
+        return self.clientEp->get(resourcePath, headers);
+    }
+
+    # Get the messages in a stored chat completion. Only Chat Completions that
+    # have been created with the `store` parameter set to `true` will be
+    # returned.
+    #
+    # + completion_id - The ID of the chat completion to retrieve messages from.
+    # + headers - Headers to be sent with the request 
+    # + queries - Queries to be sent with the request 
+    # + return - A list of messages 
+    resource isolated function get chat/completions/[string completion_id]/messages(map<string|string[]> headers = {}, *GetChatCompletionMessagesQueries queries) returns ChatCompletionMessageList|error {
+        string resourcePath = string `/chat/completions/${getEncodedUri(completion_id)}/messages`;
+        resourcePath = resourcePath + check getPathForQueryParam(queries);
+        return self.clientEp->get(resourcePath, headers);
     }
 
     # **Starting a new project?** We recommend trying [Responses](/docs/api-reference/responses)
     # to take advantage of the latest OpenAI platform features. Compare
     # [Chat Completions with Responses](/docs/guides/responses-vs-chat-completions?api-mode=responses).
-    #
+    # 
     # ---
-    #
+    # 
     # Creates a model response for the given chat conversation. Learn more in the
     # [text generation](/docs/guides/text-generation), [vision](/docs/guides/vision),
     # and [audio](/docs/guides/audio) guides.
-    #
+    # 
     # Parameter support can differ depending on the model used to generate the
     # response, particularly for newer reasoning models. Parameters that are only
     # supported for reasoning models are noted below. For the current state of
     # unsupported parameters in reasoning models,
     # [refer to the reasoning guide](/docs/guides/reasoning).
-    #
+    # 
     # Returns a chat completion object, or a streamed sequence of chat completion
     # chunk objects if the request is streamed.
     #
-    # + headers - Headers to be sent with the request
-    # + return - OK
+    # + headers - Headers to be sent with the request 
+    # + return - OK 
     resource isolated function post chat/completions(CreateChatCompletionRequest payload, map<string|string[]> headers = {}) returns CreateChatCompletionResponse|error {
         string resourcePath = string `/chat/completions`;
         http:Request request = new;
-        json jsonBody = jsondata:toJson(payload);
+        json jsonBody = payload.toJson();
+        request.setPayload(jsonBody, "application/json");
+        return self.clientEp->post(resourcePath, request, headers);
+    }
+
+    # Modify a stored chat completion. Only Chat Completions that have been
+    # created with the `store` parameter set to `true` can be modified. Currently,
+    # the only supported modification is to update the `metadata` field.
+    #
+    # + completion_id - The ID of the chat completion to update.
+    # + headers - Headers to be sent with the request 
+    # + return - A chat completion 
+    resource isolated function post chat/completions/[string completion_id](completions_completion_id_body payload, map<string|string[]> headers = {}) returns CreateChatCompletionResponse|error {
+        string resourcePath = string `/chat/completions/${getEncodedUri(completion_id)}`;
+        http:Request request = new;
+        json jsonBody = payload.toJson();
         request.setPayload(jsonBody, "application/json");
         return self.clientEp->post(resourcePath, request, headers);
     }
