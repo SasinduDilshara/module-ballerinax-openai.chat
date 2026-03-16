@@ -1,8 +1,15 @@
 ## Overview
 
-[OpenAI](https://openai.com/), an AI research organization focused on creating friendly AI for humanity, offers the [OpenAI API](https://platform.openai.com/docs/api-reference/introduction) to access its powerful AI models for tasks like natural language processing and image generation.
+[OpenAI](https://openai.com/) offers powerful AI models for tasks like natural language processing, audio transcription, and image generation.
 
-The `ballarinax/openai.chat` package offers functionality to connect and interact with [chat completion related endpoints of OpenAI REST API v1](https://platform.openai.com/docs/api-reference/chat) Enabling seamless interaction with the advanced GPT-4 models developed by OpenAI for diverse conversational and text generation tasks.
+The OpenAI Chat connector offers APIs to connect and interact with the chat completion related endpoints of the OpenAI REST API, enabling seamless interaction with advanced GPT models for diverse conversational and text generation tasks.
+
+### Key Features
+- Integration with advanced GPT models including GPT-4o, GPT-4, and GPT-3.5
+- Support for structured chat completions and interactive dialogues
+- Efficient handling of conversational history and message roles
+- Secure communication with API key-based authentication
+- Simplified management of complex model parameters and response streams
 
 ## Setup guide
 
