@@ -4,6 +4,14 @@
 
 The `ballarinax/openai.chat` package offers functionality to connect and interact with [chat completion related endpoints of OpenAI REST API v1](https://platform.openai.com/docs/api-reference/chat) Enabling seamless interaction with the advanced GPT-4 models developed by OpenAI for diverse conversational and text generation tasks.
 
+
+### Key Features
+
+- Generate chat completions using GPT models
+- Support for multi-turn conversations with message history
+- Function calling and tool use capabilities
+- Configurable model parameters and response formats
+
 ## Setup guide
 
 To use the OpenAI Connector, you must have access to the OpenAI API through a [OpenAI Platform account](https://platform.openai.com) and a project under it. If you do not have a OpenAI Platform account, you can sign up for one [here](https://platform.openai.com/signup).
